@@ -1,69 +1,32 @@
-(function() {
-  'use strict';
+// Define values for keycodes
+const VK_ENTER = 13;
+const VK_SPACE = 32;
+const VK_LEFT = 37;
+const VK_UP = 38;
+const VK_RIGHT = 39;
+const VK_DOWN = 40;
 
-  // Define values for keycodes
-  var VK_ENTER      = 13;
-  var VK_SPACE      = 32;
-  var VK_LEFT       = 37;
-  var VK_UP         = 38;
-  var VK_RIGHT      = 39;
-  var VK_DOWN       = 40;
+const setChecked = (node, bool) => {
+  node.tabIndex = bool ? 0 : -1;
+  node[bool ? "setAttribute" : "removeAttribute"]("checked", "");
+  bool && node.focus();
+};
 
-  // Helper function to convert NodeLists to Arrays
-  function slice(nodes) {
-    return Array.prototype.slice.call(nodes);
-  }
+const mod = (x, y) => x - Math.floor(x / y) * y;
 
-  function RadioGroup(id) {
-    this.el = document.querySelector(id);
-    this.buttons = slice(this.el.querySelectorAll('.radio'));
-    this.focusedIdx = 0;
-    this.focusedButton = this.buttons[this.focusedIdx];
+function main() {
+  const ul = document.querySelector("ul");
+  const radioButtons = ul.querySelectorAll("li");
 
-    this.el.addEventListener('keydown', this.handleKeyDown.bind(this));
-  }
+  (function go(state = 0) {
+    radioButtons.forEach((rb, i) => {
+      i == state ? setChecked(rb, true) : setChecked(rb, false);
+      rb.onclick = () => go(i);
+      ul.onkeydown = ({ keyCode }) =>
+        (keyCode === VK_ENTER || keyCode === VK_SPACE) &&
+        go(mod(state + 1, radioButtons.length));
+    });
+  })();
+}
 
-  RadioGroup.prototype.handleKeyDown = function(e) {
-    switch(e.keyCode) {
-
-      case VK_UP:
-      case VK_LEFT: {
-
-        e.preventDefault();
-
-        // This seems like a good place to do some stuff :)
-
-        break;
-
-      }
-
-      case VK_DOWN:
-      case VK_RIGHT: {
-
-        e.preventDefault();
-
-        // This seems like a good place to do some stuff :)
-
-        break;
-      }
-
-    }
-
-    this.changeFocus(this.focusedIdx); // <-- Hmm, interesting...
-  };
-
-  RadioGroup.prototype.changeFocus = function(idx) {
-    // Set the old button to tabindex -1
-    this.focusedButton.tabIndex = -1;
-    this.focusedButton.removeAttribute('checked');
-
-    // Set the new button to tabindex 0 and focus it
-    this.focusedButton = this.buttons[idx];
-    this.focusedButton.tabIndex = 0;
-    this.focusedButton.focus();
-    this.focusedButton.setAttribute('checked', 'checked');
-  };
-
-  var group1 = new RadioGroup('#group1');
-
-}());
+main();
